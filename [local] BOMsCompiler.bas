@@ -7,8 +7,8 @@ Dim wbDryWetCompiled As Worksheet
 Sub main()
     Dim wbCompiledPath As String
     wbCompiledPath = defineFiles()
-    ' getWetBOMs wbCompiledPath
-    ' getDryBOMs wbCompiledPath
+    getWetBOMs wbCompiledPath
+    getDryBOMs wbCompiledPath
     matchDryOnWet
     joinWetOnDry
 End Sub
@@ -16,15 +16,15 @@ End Sub
 Function defineFiles()
     Set wbCompiled = ThisWorkbook
     defineFiles = wbCompiled.Path
-    ' wbCompiled.Sheets.Add.Name = "WetBOMs"
+    wbCompiled.Sheets.Add.Name = "WetBOMs"
     Set wbWetCompiled = wbCompiled.Worksheets("WetBOMs")
     setHeaderRows wbWetCompiled
 
-    ' wbCompiled.Sheets.Add.Name = "DryBOMs"
+    wbCompiled.Sheets.Add.Name = "DryBOMs"
     Set wbDryCompiled = wbCompiled.Worksheets("DryBOMs")
     setHeaderRows wbDryCompiled
 
-    ' wbCompiled.Sheets.Add.Name = "DryMerged"
+    wbCompiled.Sheets.Add.Name = "DryMerged"
     Set wbDryWetCompiled = wbCompiled.Worksheets("DryMerged")
     setHeaderRows wbDryWetCompiled
 End Function
