@@ -2,7 +2,7 @@ Option Explicit
 Dim wbCompiled As Workbook
 Dim wbWetCompiled As Worksheet
 Dim wbDryCompiled As Worksheet
-Dim wbAllCompiled As Worksheet
+Dim wbDryWetCompiled As Worksheet
 
 Sub main()
     Dim wbCompiledPath As String
@@ -10,6 +10,7 @@ Sub main()
     ' getWetBOMs wbCompiledPath
     ' getDryBOMs wbCompiledPath
     matchDryOnWet
+    joinWetOnDry
 End Sub
 
 Function defineFiles()
@@ -23,9 +24,9 @@ Function defineFiles()
     Set wbDryCompiled = wbCompiled.Worksheets("DryBOMs")
     setHeaderRows wbDryCompiled
 
-    ' wbCompiled.Sheets.Add.Name = "allCompiled"
-    Set wbAllCompiled = wbCompiled.Worksheets("allCompiled")
-    setHeaderRows wbAllCompiled
+    ' wbCompiled.Sheets.Add.Name = "DryMerged"
+    Set wbDryWetCompiled = wbCompiled.Worksheets("DryMerged")
+    setHeaderRows wbDryWetCompiled
 End Function
 
 Sub setHeaderRows(ws)
@@ -144,8 +145,6 @@ Sub matchDryOnWet()
 
     wbDryCompiled.Range("C:C").NumberFormat = "@"
     getBPMatchOnDry
-
-    joinBothSheets
 End Sub
 
 Sub getBPMatchOnDry()
@@ -165,15 +164,13 @@ Sub getBPMatchOnDry()
             BPComponentType = "RawIngredient"
         Else
             BPComponentType = "BP"
-        End If
-
-        BPName = Left(wbDryCompiled.Range("B" & cell.Row).Value, 4)
-        If Left(BPName, 1) <> "S" Then
-            If Left(BPName, 1) <> "Y" Then
+            BPName = Left(wbDryCompiled.Range("D" & cell.Row).Value, 4)
+            If Left(BPName, 1) = "S" Or Left(BPName, 1) = "Y" Then
+                BPName = BPName
+            Else
                 BPName = wbDryCompiled.Range("B" & cell.Row).Value
             End If
         End If
-
         wbDryCompiled.Range("I" & cell.Row).Value = BPComponentType
         wbDryCompiled.Range("J" & cell.Row).Value = BPName
     Next cell
@@ -187,10 +184,62 @@ Sub getBPOriginOnWet()
     wbWetCompiled.Range("J2:J" & lastRow).Value = wbWetCompiled.Range("B2:B" & lastRow).Value
 End Sub
 
-Sub joinBothSheets()
+Sub joinWetOnDry()
+    wbDryWetCompiled.Range("K1") = "Final FP Code"
+    Dim lastRow As Integer, BPRow As Integer
+    Dim BPCode As String, ingredientType As String, FPCode As String
+    Dim ingredientRow As Range
+    
+    lastRow = wbDryCompiled.Range("A1").End(xlDown).Row
+    BPRow = 2
+    Dim cell As Range
+    For Each cell In wbDryCompiled.Range("A2:A" & lastRow)
+        ingredientType = wbDryCompiled.Range("I" & cell.Row)
+        BPCode = wbDryCompiled.Range("J" & cell.Row)
+        FPCode = wbDryCompiled.Range("B" & cell.Row)
+        If ingredientType = "BP" Then
+            wbDryWetCompiled.Range("K" & BPRow).Value = FPCode
+            BPRow = getBPIngredients(BPCode, BPRow, FPCode, cell.Row)
+        Else
+            Set ingredientRow = wbDryCompiled.Range("A" & cell.Row & ":J" & cell.Row)
+            wbDryWetCompiled.Range("A" & BPRow & ":J" & BPRow).Value = ingredientRow.Value
+            wbDryWetCompiled.Range("K" & BPRow).Value = FPCode
+            BPRow = BPRow + 1
+        End If
+    Next cell
 
 End Sub
 
-Sub arrangeByCode(nRows)
+Function getBPIngredients(BPCode, BPRow, FPCode, scaleRow)
+    Dim BPCodeList As Range
+    Set BPCodeList = wbWetCompiled.Range("B1:B" & wbWetCompiled.Range("B1").End(xlDown).Row)
 
-End Sub
+    Dim firstBPCodeRow As Integer, lastBPCodeRow As Integer
+    firstBPCodeRow = Application.WorksheetFunction.Match(BPCode, BPCodeList, 0)
+    lastBPCodeRow = firstBPCodeRow
+    Do While True
+        If wbWetCompiled.Range("B" & lastBPCodeRow).Value <> BPCode Then
+            lastBPCodeRow = lastBPCodeRow - 1
+            Exit Do
+        Else
+            lastBPCodeRow = lastBPCodeRow + 1
+        End If
+    Loop
+
+    Dim ingredientRow As Range
+    Set ingredientRow = wbWetCompiled.Range("A" & firstBPCodeRow & ":J" & lastBPCodeRow)
+    wbDryWetCompiled.Range("A" & BPRow & ":J" & BPRow + (lastBPCodeRow - firstBPCodeRow)).Value = ingredientRow.Value
+    
+    Dim scale1000 As Double, scale36000 As Double
+    scale1000 = wbDryCompiled.Range("E" & scaleRow).Value/1000
+    scale36000 = wbDryCompiled.Range("F" & scaleRow).Value/36000
+
+    Dim cell As Range
+    For Each cell In wbDryWetCompiled.Range("E" & BPRow & ":E" & BPRow + (lastBPCodeRow - firstBPCodeRow))
+        cell.Value = cell.Value/scale1000
+        wbDryWetCompiled.Range("F" & cell.Row).Value = wbDryWetCompiled.Range("F" & cell.Row).Value/scale36000
+    Next cell
+
+    wbDryWetCompiled.Range("K" & BPRow & ":K" & BPRow + (lastBPCodeRow - firstBPCodeRow)).Value = FPCode
+    getBPIngredients = wbDryWetCompiled.Range("A1").End(xlDown).Row + 1
+End Function
