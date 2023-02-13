@@ -207,7 +207,7 @@ Sub joinWetOnDry()
             BPRow = BPRow + 1
         End If
     Next cell
-
+    wbDryWetCompiled.Range("C:C").NumberFormat = "@"
 End Sub
 
 Function getBPIngredients(BPCode, BPRow, FPCode, scaleRow)
