@@ -236,7 +236,7 @@ Function getBPIngredients(BPCode, BPRow, FPCode, scaleRow)
 
     Dim cell As Range
     For Each cell In wbDryWetCompiled.Range("E" & BPRow & ":E" & BPRow + (lastBPCodeRow - firstBPCodeRow))
-        cell.Value = cell.Value/ * scale1000
+        cell.Value = cell.Value * scale1000
         wbDryWetCompiled.Range("F" & cell.Row).Value = wbDryWetCompiled.Range("F" & cell.Row).Value * scale36000
     Next cell
 
