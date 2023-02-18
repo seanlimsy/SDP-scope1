@@ -109,13 +109,15 @@ Function grabBOMsFromWS(BOMws, nextRow, outputWS, powderType)
     meteredColNumber = Application.WorksheetFunction.Match("Material Handling Type", colRange, 0)
     meteredColLetter = Split(Cells(1, meteredColNumber).Address, "$")(1)
 
+    Dim materialHandlingType As String
     lastIngredientRow = BOMws.Range("C14").End(xlDown).Row
     For Each cell In BOMws.Range("C15:C" & lastIngredientRow)
 
         If cell.Value = "*" Or cell.Font.Strikethrough = True Then
         Else
             ingredientRow = cell.Row
-            If BOMws.Range(meteredColLetter & ingredientRow).Value = "Metered" Then
+            materialHandlingType = BOMws.Range(meteredColLetter & ingredientRow).Value
+            If materialHandlingType = "Metered" Or materialHandlingType = "Weigh & Dispense" Then
                 If BOMws.Range("F" & ingredientRow).Value <> 0 Then
                     Set requiredInfo1 = BOMws.Range("C" & ingredientRow & ":G" & ingredientRow)
                     Set requiredInfo2 = BOMws.Range(meteredColLetter & ingredientRow)
@@ -161,6 +163,8 @@ Sub getBPMatchOnDry()
         BOMComponentCode = wbDryCompiled.Range("C" & cell.Row).Value
 
         If Len(BOMComponentCode) < 8 Then
+            BPComponentType = "RawIngredient"
+        ElseIf BOMComponentCode = "20033706" Then
             BPComponentType = "RawIngredient"
         Else
             BPComponentType = "BP"
@@ -231,8 +235,8 @@ Function getBPIngredients(BPCode, BPRow, FPCode, scaleRow)
     wbDryWetCompiled.Range("A" & BPRow & ":J" & BPRow + (lastBPCodeRow - firstBPCodeRow)).Value = ingredientRow.Value
     
     Dim scale1000 As Double, scale36000 As Double
-    scale1000 = wbDryCompiled.Range("E" & scaleRow).Value/1000
-    scale36000 = wbDryCompiled.Range("F" & scaleRow).Value/36000
+    scale1000 = wbDryCompiled.Range("E" & scaleRow).Value / 1000
+    scale36000 = wbDryCompiled.Range("F" & scaleRow).Value / 36000
 
     Dim cell As Range
     For Each cell In wbDryWetCompiled.Range("E" & BPRow & ":E" & BPRow + (lastBPCodeRow - firstBPCodeRow))
@@ -243,3 +247,4 @@ Function getBPIngredients(BPCode, BPRow, FPCode, scaleRow)
     wbDryWetCompiled.Range("K" & BPRow & ":K" & BPRow + (lastBPCodeRow - firstBPCodeRow)).Value = FPCode
     getBPIngredients = wbDryWetCompiled.Range("A1").End(xlDown).Row + 1
 End Function
+
