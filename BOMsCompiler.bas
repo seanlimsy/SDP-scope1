@@ -117,7 +117,7 @@ Function grabBOMsFromWS(BOMws, nextRow, outputWS, powderType)
         Else
             ingredientRow = cell.Row
             materialHandlingType = BOMws.Range(meteredColLetter & ingredientRow).Value
-            If materialHandlingType Like "Weigh & Dispense" Or materialHandlingType Like "Weighed & Dispensed" Then 
+            If materialHandlingType Like "Weigh & Dispense" Or materialHandlingType Like "Weighed & Dispensed" Then
                 materialHandlingType = "Weigh & Dispense"
             End If
 
@@ -168,8 +168,10 @@ Sub getBPMatchOnDry()
 
         If Len(BOMComponentCode) < 8 Then
             BPComponentType = "RawIngredient"
+            BPName = wbDryCompiled.Range("B" & cell.Row).Value
         ElseIf BOMComponentCode = "20033706" Then
             BPComponentType = "RawIngredient"
+            BPName = wbDryCompiled.Range("B" & cell.Row).Value
         Else
             BPComponentType = "BP"
             BPName = Left(wbDryCompiled.Range("D" & cell.Row).Value, 4)
