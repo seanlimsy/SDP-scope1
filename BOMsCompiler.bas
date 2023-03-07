@@ -117,6 +117,10 @@ Function grabBOMsFromWS(BOMws, nextRow, outputWS, powderType)
         Else
             ingredientRow = cell.Row
             materialHandlingType = BOMws.Range(meteredColLetter & ingredientRow).Value
+            If materialHandlingType Like "Weigh & Dispense" Or materialHandlingType Like "Weighed & Dispensed" Then 
+                materialHandlingType = "Weigh & Dispense"
+            End If
+
             If materialHandlingType = "Metered" Or materialHandlingType = "Weigh & Dispense" Then
                 If BOMws.Range("F" & ingredientRow).Value <> 0 Then
                     Set requiredInfo1 = BOMws.Range("C" & ingredientRow & ":G" & ingredientRow)
@@ -247,4 +251,3 @@ Function getBPIngredients(BPCode, BPRow, FPCode, scaleRow)
     wbDryWetCompiled.Range("K" & BPRow & ":K" & BPRow + (lastBPCodeRow - firstBPCodeRow)).Value = FPCode
     getBPIngredients = wbDryWetCompiled.Range("A1").End(xlDown).Row + 1
 End Function
-
