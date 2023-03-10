@@ -31,10 +31,10 @@ Sub initializeWorksheets()
     setWorksheet dryScheduleD2, "Blender 2 Schedule"
     setWorksheet dryScheduleD3, "Blender 3 Schedule"
     setWorksheet dryScheduleD4, "Blender 4 Schedule"
-    setWorksheet mapBOM, "BOM Mappings"
+    setWorksheet mapBOM, "Missing BOM Mappings CAA0903"
 
-    ' wbCompiled.Sheets.Add.Name = "MissingBOMs"
-    Set missingBOMs = wbCompiled.Sheets("MissingBOMs")
+    wbCompiled.Sheets.Add.Name = "Mapped BOMs"
+    Set missingBOMs = wbCompiled.Sheets("Mapped BOMs")
     setHeaderRows missingBOMs
 End Sub
 
