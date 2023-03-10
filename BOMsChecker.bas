@@ -10,6 +10,8 @@ Dim dryScheduleD3 As Worksheet
 Dim dryScheduleD4 As Worksheet
 Dim missingBOMs As Worksheet
 
+Dim mapBOM As Worksheet
+
 Sub checkBOMsMain()
     Dim nextStart As Integer
     initializeWorksheets
@@ -29,8 +31,9 @@ Sub initializeWorksheets()
     setWorksheet dryScheduleD2, "Blender 2 Schedule"
     setWorksheet dryScheduleD3, "Blender 3 Schedule"
     setWorksheet dryScheduleD4, "Blender 4 Schedule"
+    setWorksheet mapBOM, "BOM Mappings"
 
-    wbCompiled.Sheets.Add.Name = "MissingBOMs"
+    ' wbCompiled.Sheets.Add.Name = "MissingBOMs"
     Set missingBOMs = wbCompiled.Sheets("MissingBOMs")
     setHeaderRows missingBOMs
 End Sub
@@ -63,7 +66,7 @@ Function checkWetSchedule(ws, startRow)
         BPToCheck = uniqueBPListCodes(i, 1)
         missingBOMs.Range("A" & (i + startRow)) = "WP"
         missingBOMs.Range("B" & (i + startRow)) = BPToCheck
-        missingBOMs.Range("C" & (i + startRow)) = isBPinBOMs(BPToCheck, wbWetCompiled)
+        missingBOMs.Range("C" & (i + startRow)) = isBPinBOMs(BPToCheck, wbWetCompiled, "WP")
     Next i
     
     Dim nextStartRow As Integer
@@ -84,25 +87,64 @@ Function checkDrySchedule(ws, startRow, Di)
         FPToCheck = uniqueFPListCodes(i, 1)
         missingBOMs.Range("A" & (i + startRow)) = "DB-" & Di
         missingBOMs.Range("B" & (i + startRow)) = FPToCheck
-        missingBOMs.Range("C" & (i + startRow)) = isBPinBOMs(FPToCheck, wbDryCompiled)
+        missingBOMs.Range("C" & (i + startRow)) = isBPinBOMs(FPToCheck, wbDryCompiled, "DB")
     Next i
     Dim nextStartRow As Integer
     nextStartRow = missingBOMs.Range("A1").End(xlDown).Row
     checkDrySchedule = nextStartRow
 End Function
 
-Function isBPinBOMs(powerCode, BOMws) As Boolean
+Function isBPinBOMs(powderCode, BOMws, process) As String
     Dim firstRow As Integer, lastRow As Integer
     firstRow = 2
     lastRow = BOMws.Range("B2").End(xlDown).Row
 
     Dim i As Integer
+    Dim checkMap As Integer
     For i = firstRow To lastRow
-        If BOMws.Range("B" & i) = powerCode Then
-            isBPinBOMs = True
+        If BOMws.Range("B" & i) = powderCode Then
+            isBPinBOMs = powderCode
             Exit Function
+        Else
+            checkMap = checkBOMMap(powderCode, process)
+            If checkMap > 0 Then
+                isBPinBOMs = getBOMMap(checkMap, process)
+                Exit Function
+            End If
         End If
     Next i
-    isBPinBOMs = False
+    isBPinBOMs = "Not Found"
 End Function
 
+Function checkBOMMap(powderCode, process)
+    Dim firstRow As Integer, lastRow As Integer, i As Integer
+    firstRow = 2
+    If process = "DB" Then
+        lastRow = mapBOM.Range("A2").End(xlDown).Row
+        For i = firstRow To lastRow
+            If mapBOM.Range("A" & i) = powderCode Then
+                checkBOMMap = i
+                Exit Function
+            End If
+        Next i
+    End If
+
+    If process = "WP" Then
+        lastRow = mapBOM.Range("D2").End(xlDown).Row
+        For i = firstRow To lastRow
+            If mapBOM.Range("D" & i) = powderCode Then
+                checkBOMMap = i
+                Exit Function
+            End If
+        Next i
+    End If
+    checkBOMMap = -1
+End Function
+
+Function getBOMMap(checkMap, process)
+    If process = "DB" Then
+        getBOMMap = mapBOM.Range("B" & checkMap)
+    ElseIf process = "WP" Then
+        getBOMMap = mapBOM.Range("E" & checkMap)
+    End If
+End Function

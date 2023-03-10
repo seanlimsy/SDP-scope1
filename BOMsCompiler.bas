@@ -11,6 +11,9 @@ Sub main()
     getDryBOMs wbCompiledPath
     matchDryOnWet
     joinWetOnDry
+    getFormattedMaterialCode wbWetCompiled
+    getFormattedMaterialCode wbDryCompiled
+    getFormattedMaterialCode wbDryWetCompiled
 End Sub
 
 Function defineFiles()
@@ -18,14 +21,17 @@ Function defineFiles()
     defineFiles = wbCompiled.Path
     wbCompiled.Sheets.Add.Name = "WetBOMs"
     Set wbWetCompiled = wbCompiled.Worksheets("WetBOMs")
+    wbWetCompiled.Tab.Color = RGB(255, 192, 0)
     setHeaderRows wbWetCompiled
 
     wbCompiled.Sheets.Add.Name = "DryBOMs"
     Set wbDryCompiled = wbCompiled.Worksheets("DryBOMs")
+    wbDryCompiled.Tab.Color = RGB(255, 192, 0)
     setHeaderRows wbDryCompiled
 
     wbCompiled.Sheets.Add.Name = "DryMerged"
     Set wbDryWetCompiled = wbCompiled.Worksheets("DryMerged")
+    wbDryWetCompiled.Tab.Color = RGB(255, 192, 0)
     setHeaderRows wbDryWetCompiled
 End Function
 
@@ -40,6 +46,16 @@ Sub setHeaderRows(ws)
     ws.Range("H1") = "Material Handling Type"
     ws.Range("I1") = "FP Component Type"
     ws.Range("J1") = "BP Origin Code"
+End Sub
+
+Sub getFormattedMaterialCode(ws)
+    ws.Range("D1").EntireColumn.Insert
+    ws.Range("D1") = "Formatted BOM Code"
+
+    Dim endRow As Integer
+    endRow = ws.Range("C2").End(xlDown).Row
+    ws.Range("D2:D" & endRow).NumberFormat = "General"
+    ws.Range("D2:D" & endRow).Formula = "=TEXT(C2, ""00000"")"
 End Sub
 
 Sub getWetBOMs(wbCompiledPath)
