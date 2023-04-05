@@ -20,18 +20,24 @@ Sub checkBOMsMain()
     nextStart = checkDrySchedule(dryScheduleD2, nextStart, "D2")
     nextStart = checkDrySchedule(dryScheduleD3, nextStart, "D3")
     nextStart = checkDrySchedule(dryScheduleD4, nextStart, "D4")
+
+    missingBOMs.Range("H1").Value = "Missing in Dry Blending BOM"
+    missingBOMs.Range("H2").Formula = "=IFERROR(SORT(UNIQUE(FILTER(B2:B280,(A2:A280<>""WP"")*(C2:C280=""Not Found"")))), ""None"")"
+
+    missingBOMs.Range("I1").Value = "Missing Wet Process BOM"
+    missingBOMs.Range("I2").Formula = "=IFERROR(SORT(FILTER(B2:B280,(A2:A280=""WP"")*(C2:C280=""Not Found""))), ""None"")"
 End Sub
 
 Sub initializeWorksheets()
     Set wbCompiled = ThisWorkbook
     setWorksheet wbWetCompiled, "WetBOMs"
     setWorksheet wbDryCompiled, "DryBOMs"
-    setWorksheet wetSchedule, "Baseline"
+    setWorksheet wetSchedule, "Wet Process"
     setWorksheet dryScheduleD1, "Blender 1 Schedule"
     setWorksheet dryScheduleD2, "Blender 2 Schedule"
     setWorksheet dryScheduleD3, "Blender 3 Schedule"
     setWorksheet dryScheduleD4, "Blender 4 Schedule"
-    setWorksheet mapBOM, "Missing BOM Mappings CAA0903"
+    setWorksheet mapBOM, "Missing BOM Mappings"
 
     wbCompiled.Sheets.Add.Name = "Mapped BOMs"
     Set missingBOMs = wbCompiled.Sheets("Mapped BOMs")
